@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+from collections import deque# để dùng popelft
 
 def ma_tran_sang_danh_sach_ke(ma_tran):
     """Chuyển Ma trận kề -> Danh sách kề"""
@@ -75,6 +76,66 @@ def nhap_du_lieu_tu_ban_phim():
                 
     return ma_tran_goc, co_huong
 
+
+
+#Duyệt đồ thị theo các chiến lược: BFS & DFS & BIPARTITE
+def bfs(danh_sach_ke, start):
+    da_tham = set()
+    hang_doi = deque([start])
+    ket_qua = []
+
+    while hang_doi:
+        u = hang_doi.popleft()
+        if u not in da_tham:
+            da_tham.add(u)
+            ket_qua.append(u)
+
+            for v in danh_sach_ke[u]:
+                if v not in da_tham:
+                    hang_doi.append(v)
+
+    return ket_qua
+
+def dfs(danh_sach_ke, u, da_tham=None, ket_qua=None):
+    if da_tham is None:
+        da_tham = set()
+        ket_qua = []
+
+    da_tham.add(u)
+    ket_qua.append(u)
+
+    for v in danh_sach_ke[u]:
+        if v not in da_tham:
+            dfs(danh_sach_ke, v, da_tham, ket_qua)
+
+    return ket_qua
+
+from collections import deque
+from data import danh_sach_ke
+# ===== BIPARTITE =====
+def kiem_tra_bipartite(danh_sach_ke):
+    mau = {}  # lưu màu của mỗi đỉnh (0 hoặc 1)
+
+    for dinh in danh_sach_ke:
+        if dinh not in mau:
+            hang_doi = deque([dinh])
+            mau[dinh] = 0  # tô màu đầu tiên
+
+            while hang_doi:
+                u = hang_doi.popleft()
+
+                for v in danh_sach_ke[u]:
+                    if u == v:
+                        return False
+
+                    if v not in mau:
+                        mau[v] = 1 - mau[u] 
+                        hang_doi.append(v)
+                    elif mau[v] == mau[u]:
+                        return False  
+
+    return True
+
 if __name__ == "__main__":
     ma_tran_goc, do_thi_co_huong = nhap_du_lieu_tu_ban_phim()
 
@@ -86,3 +147,25 @@ if __name__ == "__main__":
     print(f"Danh sách cạnh: {danh_sach_canh}")
 
     ve_va_luu_do_thi(danh_sach_canh, co_huong=do_thi_co_huong, ten_file="do_thi_nhap_tay.png")
+    
+    print("Dữ liệu:", danh_sach_ke)
+     #Tim duong di ngan nhat
+     
+    print("BFS - DFS - BIPARTITE OPERATION")
+    start = int(input("nhap dinh bat dau:"))
+
+    print("\n--- BFS ---")
+    print("BFS:", bfs(danh_sach_ke, start))
+
+    print("\n--- DFS ---")
+    print("DFS:", dfs(danh_sach_ke, start))
+
+    print("\n--- BIPARTITE ---")
+    if kiem_tra_bipartite(danh_sach_ke):
+        print("→ Đồ thị là BIPARTITE")
+    else:
+        print("→ Đồ thị KHÔNG phải BIPARTITE")
+
+
+
+
